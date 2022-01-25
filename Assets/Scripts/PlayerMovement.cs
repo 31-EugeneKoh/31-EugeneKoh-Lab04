@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -15,11 +16,27 @@ public class PlayerMovement : MonoBehaviour
     void Start()
     {
         PlayerRigidbody = GetComponent<Rigidbody>();
+        coinText.GetComponent<Text>().text = "Coins: " + coinCount;
     }
 
     // Update is called once per frame
     void Update()
     {
+        coinCount = GameObject.FindGameObjectsWithTag("Coin").Length;
+        coinText.GetComponent<Text>().text = "Coins: " + coinCount;
+
+        if (coinCount <= 0)
+        {
+            Debug.Log("Going to WinScene");
+            SceneManager.LoadScene("GameWin");
+        }
+
+        if (transform.position.y < -5)
+        {
+            Debug.Log("Going to LoseScene");
+            SceneManager.LoadScene("GameLose");
+        }
+
         if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
         {
             transform.rotation = Quaternion.Euler(0, 0, 0);
@@ -53,5 +70,20 @@ public class PlayerMovement : MonoBehaviour
     void StartRun()
     {
         transform.Translate(Vector3.forward * Time.deltaTime * speed);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.CompareTag("Coin"))
+        {
+            Debug.Log("Coin Collected!");
+            Destroy(other.gameObject);
+        }
+
+        if (other.gameObject.CompareTag("Hazard"))
+        {
+            Debug.Log("Touched Hazard!");
+            SceneManager.LoadScene("GameLose");
+        }
     }
 }
